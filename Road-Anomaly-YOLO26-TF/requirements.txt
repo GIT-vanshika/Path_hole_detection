@@ -1,0 +1,20 @@
+# AI & Training Frameworks
+ultralytics>=8.3.0
+tensorflow>=2.15.0
+torch>=2.2.0
+torchvision>=0.17.0
+
+# Computer Vision & Image Processing
+opencv-python>=4.9.0
+pillow>=10.2.0
+numpy>=1.26.0
+
+# Data Acquisition & Management
+yt-dlp>=2024.03.10
+roboflow>=1.1.0
+
+# Utilities & Visualization
+tqdm>=4.66.0
+matplotlib>=3.8.0
+pandas>=2.2.0
+pyyaml>=6.0

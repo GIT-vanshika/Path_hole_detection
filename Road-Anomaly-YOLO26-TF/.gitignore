@@ -1,0 +1,9 @@
+
+data_prep/raw_sources/
+simulation/test_clips/
+*.mp4
+*.jpg
+*.tflite
+*.pt
+__pycache__/
+.ipynb_checkpoints/
