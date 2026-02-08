@@ -1,1 +1,0 @@
-# Code to extract frames for labeling
