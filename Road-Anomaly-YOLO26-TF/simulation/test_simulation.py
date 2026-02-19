@@ -7,14 +7,20 @@ import csv
 from datetime import datetime
 from pathlib import Path
 
+try:
+    import tflite_runtime.interpreter as tflite
+except ImportError:
+    from tensorflow import lite as tflite
+
 # --- CONFIGURATION ---
 MODEL_PATH = "models/best_int8.tflite"
 VIDEO_PATH = "simulation/test_clips/pothole_dashcam.mp4"
 
 INPUT_SIZE = 320     
-CONF_THRESHOLD = 0.60  
+CONF_THRESHOLD = 0.50  
 NMS_THRESHOLD = 0.40
-LOG_COOLDOWN = 1.0   
+LOG_COOLDOWN = 1.0 
+THREADS=4  
 
 # LOGGING SETUP 
 VIDEO_STEM = Path(VIDEO_PATH).stem                  
@@ -26,7 +32,7 @@ print(f" Log will be saved to: {LOG_FILE}")
 print(f" Loading Model: {MODEL_PATH}")
 
 try:
-    interpreter = tf.lite.Interpreter(model_path=MODEL_PATH)
+    interpreter = tf.lite.Interpreter(model_path=MODEL_PATH, num_threads=THREADS)
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
