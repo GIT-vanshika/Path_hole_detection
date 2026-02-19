@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import tensorflow as tf  # Use tflite_runtime.interpreter if using RPi specific lib
+import tensorflow as tf
 import time
 import os
 import csv
@@ -8,15 +8,15 @@ from datetime import datetime
 from pathlib import Path
 
 # --- CONFIGURATION ---
-MODEL_PATH = "models/best_model.tflite"
+MODEL_PATH = "models/best_int8.tflite"
 VIDEO_PATH = "simulation/test_clips/pothole_dashcam.mp4"
 
-INPUT_SIZE = 480       
-CONF_THRESHOLD = 0.60  # High threshold to remove noise
+INPUT_SIZE = 320     
+CONF_THRESHOLD = 0.60  
 NMS_THRESHOLD = 0.40
-LOG_COOLDOWN = 1.0     # Wait 1 second between logs to save SD card/Storage
+LOG_COOLDOWN = 1.0   
 
-# --- LOGGING SETUP ---
+# LOGGING SETUP 
 VIDEO_STEM = Path(VIDEO_PATH).stem                  
 RUN_ID = datetime.now().strftime("%Y%m%d_%H%M%S")   
 LOG_FILE = Path("Logs") / f"{VIDEO_STEM}_{RUN_ID}.csv"
@@ -62,21 +62,21 @@ try:
             if not ret:
                 break
 
-            # --- A: PRE-PROCESSING ---
+            #A: PRE-PROCESSING
             display_img = cv2.resize(frame, (INPUT_SIZE, INPUT_SIZE))
             input_data = np.expand_dims(display_img, axis=0).astype(np.float32) / 255.0
 
-            # --- B: INFERENCE ---
+            #B: INFERENCE
             interpreter.set_tensor(input_details[0]['index'], input_data)
             interpreter.invoke()
             output_data = interpreter.get_tensor(output_details[0]['index'])
 
-            # --- C: POST-PROCESSING ---
+            #C: POST-PROCESSING
             output_data = np.squeeze(output_data).transpose()
             boxes, confidences = [], []
 
             for row in output_data:
-                # FIX: Clamp confidence to max 1.0 to avoid "1.04" errors
+
                 raw_conf = row[4]
                 confidence = min(float(raw_conf), 1.0) 
 
@@ -88,7 +88,6 @@ try:
                     width = int(w * INPUT_SIZE)
                     height = int(h * INPUT_SIZE)
                     
-                    # FIX: Coordinate Safety (Prevent crashes at image edges)
                     x1 = max(0, min(x1, INPUT_SIZE - 1))
                     y1 = max(0, min(y1, INPUT_SIZE - 1))
                     width = min(width, INPUT_SIZE - x1)
@@ -99,7 +98,6 @@ try:
 
             indices = cv2.dnn.NMSBoxes(boxes, confidences, CONF_THRESHOLD, NMS_THRESHOLD)
 
-            # --- D: LOGGING & DISPLAY ---
             if len(indices) > 0:
                 current_time = time.time()
                 # Check if enough time has passed since last log
@@ -121,7 +119,6 @@ try:
                             "Pothole",
                             f"{conf:.2f}"
                         ])
-                        # CRITICAL FIX: Flush buffer to save data immediately (Power cut safety)
                         csv_file.flush()
                 
                 if should_log:
@@ -133,7 +130,6 @@ try:
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
             
-            # Using try-except prevents crashing if no monitor is connected to RPi
             try:
                 cv2.imshow("Road Anomaly Detector", display_img)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
