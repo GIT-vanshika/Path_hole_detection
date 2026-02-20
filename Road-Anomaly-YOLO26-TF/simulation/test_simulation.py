@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
-import tensorflow as tf
 import time
 import os
 import csv
+import configparser
 from datetime import datetime
 from pathlib import Path
 
@@ -13,14 +13,17 @@ except ImportError:
     from tensorflow import lite as tflite
 
 # --- CONFIGURATION ---
-MODEL_PATH = "models/best_int8.tflite"
-VIDEO_PATH = "simulation/test_clips/pothole_dashcam.mp4"
+config = configparser.ConfigParser()
+config.read("simulation/detector.config")
 
-INPUT_SIZE = 320     
-CONF_THRESHOLD = 0.50  
-NMS_THRESHOLD = 0.40
-LOG_COOLDOWN = 1.0 
-THREADS=4  
+MODEL_PATH = config.get("CONFIGURATION", "MODEL_PATH")
+VIDEO_PATH = config.get("CONFIGURATION", "VIDEO_PATH")
+
+INPUT_SIZE = config.getint("CONFIGURATION", "INPUT_SIZE")
+CONF_THRESHOLD = config.getfloat("CONFIGURATION", "CONF_THRESHOLD")
+NMS_THRESHOLD = config.getfloat("CONFIGURATION", "NMS_THRESHOLD")
+LOG_COOLDOWN = config.getfloat("CONFIGURATION", "LOG_COOLDOWN")
+THREADS = config.getint("CONFIGURATION", "THREADS")
 
 # LOGGING SETUP 
 VIDEO_STEM = Path(VIDEO_PATH).stem                  
@@ -32,16 +35,20 @@ print(f" Log will be saved to: {LOG_FILE}")
 print(f" Loading Model: {MODEL_PATH}")
 
 try:
-    interpreter = tf.lite.Interpreter(model_path=MODEL_PATH, num_threads=THREADS)
+    interpreter = tflite.Interpreter(model_path=MODEL_PATH, num_threads=THREADS)
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
+
+    input_scale, input_zero_point = input_details[0]["quantization"]
+
     print(" Model Loaded!")
 except Exception as e:
     print(f" Error loading model: {e}")
     exit()
 
 print(f" Opening Video: {VIDEO_PATH}")
+print(input_details[0])
 cap = cv2.VideoCapture(VIDEO_PATH)
 if not cap.isOpened():
     cap = cv2.VideoCapture(VIDEO_PATH, cv2.CAP_MSMF)
@@ -68,10 +75,9 @@ try:
             if not ret:
                 break
 
-            #A: PRE-PROCESSING
+            #A: PRE-PROCESSING (INT8 INPUT)
             display_img = cv2.resize(frame, (INPUT_SIZE, INPUT_SIZE))
             input_data = np.expand_dims(display_img, axis=0).astype(np.float32) / 255.0
-
             #B: INFERENCE
             interpreter.set_tensor(input_details[0]['index'], input_data)
             interpreter.invoke()
