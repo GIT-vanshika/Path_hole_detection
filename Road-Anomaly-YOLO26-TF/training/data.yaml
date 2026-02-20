@@ -1,1 +1,13 @@
-# Roboflow dataset config
+names:
+- Pothole
+nc: 1
+path: /kaggle/working/New-pothole-detection-2
+roboflow:
+  license: Public Domain
+  project: new-pothole-detection
+  url: https://universe.roboflow.com/smartathon/new-pothole-detection/dataset/2
+  version: 2
+  workspace: smartathon
+test: test/images
+train: train/images
+val: valid/images

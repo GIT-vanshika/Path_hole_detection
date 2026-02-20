@@ -6,13 +6,14 @@ import csv
 from datetime import datetime
 from pathlib import Path
 
+
 try:
     import tflite_runtime.interpreter as tflite
 except ImportError:
     from tensorflow import lite as tflite
 
 # --- CONFIGURATION ---
-MODEL_PATH = "models/best_int8.tflite"
+MODEL_PATH = "/models/best_int8.tflite"
 VIDEO_PATH = "simulation/test_clips/pothole_dashcam.mp4"
 
 INPUT_SIZE = 320     
