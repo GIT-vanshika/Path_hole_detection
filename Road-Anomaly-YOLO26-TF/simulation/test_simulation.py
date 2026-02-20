@@ -12,7 +12,7 @@ try:
 except ImportError:
     from tensorflow import lite as tflite
 
-# --- CONFIGURATION ---
+
 MODEL_PATH = "/models/best_int8.tflite"
 VIDEO_PATH = "simulation/test_clips/pothole_dashcam.mp4"
 
