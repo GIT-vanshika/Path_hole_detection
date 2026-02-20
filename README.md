@@ -45,3 +45,12 @@ Initialization: The system resolves absolute paths and attempts to initialize th
 Inference: Frames are resized to 480x480 and processed. Output coordinates are clamped to the frame boundaries to prevent overflow errors.
 Filtering: Detections below 60% confidence are discarded. Non-Maximum Suppression (NMS) removes duplicate bounding boxes.
 Logging: Valid detections are written to a timestamped CSV file. The file buffer is flushed immediately after every write operation to guarantee persistence.
+
+Follow These lines to download data:
+!pip install roboflow
+
+from roboflow import Roboflow
+rf = Roboflow(api_key="baZbg4YRiN1PBEMao7aY")
+project = rf.workspace("smartathon").project("new-pothole-detection")
+version = project.version(2)
+dataset = version.download("yolo26")
