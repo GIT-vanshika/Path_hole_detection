@@ -47,8 +47,8 @@ Filtering: Detections below 60% confidence are discarded. Non-Maximum Suppressio
 Logging: Valid detections are written to a timestamped CSV file. The file buffer is flushed immediately after every write operation to guarantee persistence.
 
 Follow These lines to download data:
-!pip install roboflow
 
+!pip install roboflow
 from roboflow import Roboflow
 rf = Roboflow(api_key="baZbg4YRiN1PBEMao7aY")
 project = rf.workspace("smartathon").project("new-pothole-detection")
